@@ -14,5 +14,7 @@ resolvers ++= Seq(
 
 // https://mvnrepository.com/artifact/commons-io/commons-io
 libraryDependencies += "commons-io" % "commons-io" % "2.6"
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 fork := false

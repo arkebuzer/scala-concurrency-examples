@@ -1,15 +1,15 @@
 package org.learningconcurrency.ch2
 
-class SyncVar[T]
+import scala.collection.mutable.{Queue => MutableQueue}
+
+class SyncQueue[T](val capacity: Int)
   extends Sync[T] {
 
-  private var value: Option[T] = None
+  private val queue = MutableQueue[T]()
 
   override def get: T = lock.synchronized {
     if (isDefined) {
-      val r = value.get
-      value = None
-      r
+      queue.dequeue()
     } else {
       throw new IllegalStateException(s"SyncVar is empty")
     }
@@ -17,7 +17,7 @@ class SyncVar[T]
 
   override def put(x: T): Unit = lock.synchronized {
     if (isEmpty) {
-      value = Some(x)
+      queue.enqueue(x)
     } else {
       throw new IllegalStateException(s"SyncVar is already defined with $get")
     }
@@ -27,21 +27,21 @@ class SyncVar[T]
     while (isEmpty) {
       lock.wait()
     }
-    val r = value.get
-    value = None
     lock.notify()
-    r
+    queue.dequeue()
   }
 
   override def putWait(x: T): Unit = lock.synchronized {
-    while (isDefined) {
+    while (isFull) {
       lock.wait()
     }
-    value = Some(x)
+    queue.enqueue(x)
     lock.notify()
   }
 
-  override def isEmpty: Boolean = value.isEmpty
+  override def isEmpty: Boolean = queue.isEmpty
 
   override def isDefined: Boolean = !isEmpty
+
+  private def isFull: Boolean = queue.size == capacity
 }
